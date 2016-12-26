@@ -7,8 +7,26 @@ using std::thread;
 
 // lookup texture value
 vec3f lookup_scaled_texture(vec3f value, image3f* texture, vec2f uv, bool tile = false) {
-    // YOUR CODE GOES HERE ----------------------
-    return value; // placeholder
+	// YOUR CODE GOES HERE ----------------------
+	if (texture == nullptr) { return value; }
+	int i = uv.x * texture->width();
+	int j = uv.y * texture->height();
+	int i_prime = i + 1;
+	int j_prime = j + 1;
+	float s = uv[0] * texture->width() - i;
+	float t = uv[1] * texture->height() - j;
+	if (!tile) {
+		i = clamp(i, 0, texture->width() - 1);
+		j = clamp(j, 0, texture->height() - 1);
+		i_prime = clamp(i_prime, 0, texture->width() - 1);
+		j_prime = clamp(j_prime, 0, texture->height() - 1);
+	}
+	//compute bilinear filtering
+	value = texture->at(i, j) * (1 - s) * (1 - t) +
+		texture->at(i, j_prime) * (1 - s) * t +
+		texture->at(i_prime, j) * s * (1 - t) +
+		texture->at(i_prime, j_prime) * s * t;
+	return value;
 }
 
 // compute the brdf
@@ -73,9 +91,9 @@ vec3f pathtrace_ray(Scene* scene, ray3f ray, Rng* rng, int depth) {
     
     // compute material values by looking up textures
     // YOUR CODE GOES HERE ----------------------
-    auto ke = intersection.mat->ke;
-    auto kd = intersection.mat->kd;
-    auto ks = intersection.mat->ks;
+    auto ke = lookup_scaled_texture(intersection.mat->ke,intersection.mat->ke_txt,intersection.texcoord);
+	auto kd = lookup_scaled_texture(intersection.mat->kd, intersection.mat->kd_txt, intersection.texcoord);
+	auto ks = lookup_scaled_texture(intersection.mat->ks, intersection.mat->ks_txt, intersection.texcoord);
     auto n = intersection.mat->n;
     auto mf = intersection.mat->microfacet;
     
