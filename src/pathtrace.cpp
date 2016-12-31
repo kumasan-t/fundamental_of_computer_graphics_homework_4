@@ -51,7 +51,9 @@ vec3f eval_brdf(vec3f kd, vec3f ks, float n, vec3f v, vec3f l, vec3f norm, bool 
 vec3f eval_env(vec3f ke, image3f* ke_txt, vec3f dir) {
 	// YOUR CODE GOES HERE ----------------------
 	if (not ke_txt) return zero3f;
-	else return one3f;
+	auto u = atan2(dir.x, dir.z) / (2 * pif);
+	auto v = 1 - acos(dir.y) / pif;
+	return lookup_scaled_texture(ke, ke_txt, vec2f(u, v),true);
 }
 
 // pick a direction according to the cosine (returns direction and its pdf)
@@ -92,8 +94,8 @@ vec3f pathtrace_ray(Scene* scene, ray3f ray, Rng* rng, int depth) {
 
 	// if not hit, return background (looking up the texture by converting the ray direction to latlong around y)
 	if (not intersection.hit) {
-		// YOUR CODE GOES HERE ----------------------
-		return zero3f;
+		auto background = eval_env(scene->background, scene->background_txt, ray.d);
+		return background;
 	}
 
 	// setup variables for shorter code
@@ -201,19 +203,20 @@ vec3f pathtrace_ray(Scene* scene, ray3f ray, Rng* rng, int depth) {
 	}
 	// YOUR ENVIRONMENT LIGHT CODE GOES HERE ----------------------
 	// sample the brdf for environment illumination if the environment is there
-	// pick direction and pdf
-	// compute the material response (brdf*cos)
-	// accumulate recersively scaled by brdf*cos/pdf
-	// if shadows are enabled
-	// perform a shadow check and accumulate
-	// else
-	// else just accumulate
+	
+		// pick direction and pdf
+		// compute the material response (brdf*cos)
+		// accumulate recersively scaled by brdf*cos/pdf
+			// if shadows are enabled
+				// perform a shadow check and accumulate
+			// else
+				// else just accumulate
 
 	// YOUR INDIRECT ILLUMINATION CODE GOES HERE ----------------------
 	// sample the brdf for indirect illumination
-	// pick direction and pdf
-	// compute the material response (brdf*cos)
-	// accumulate recersively scaled by brdf*cos/pdf
+		// pick direction and pdf
+		// compute the material response (brdf*cos)
+		// accumulate recersively scaled by brdf*cos/pdf
 
 	// return the accumulated color
 	return c;
