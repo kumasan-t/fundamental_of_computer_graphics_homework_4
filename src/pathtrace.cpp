@@ -44,6 +44,15 @@ vec3f lookup_scaled_texture(vec3f value, image3f* texture, vec2f uv, bool tile =
 vec3f eval_brdf(vec3f kd, vec3f ks, float n, vec3f v, vec3f l, vec3f norm, bool microfacet) {
 	// YOUR CODE GOES HERE ----------------------
 	auto h = normalize(v + l); // placeholder (non-microfacet model)
+	if (microfacet) {
+		auto d = ((n + 2) / (2 * pif)) * pow(max(0.0f, dot(norm,h)), n);
+		auto f = ks + (one3f - ks) * pow((1 - dot(norm, l)), 5);
+		auto first_check = min(1.0f, (2 * dot(h, norm) * dot(v, norm)) / dot(v, h));
+		auto second_check = min((2 * dot(h, norm) * dot(l, norm)) / dot(l, h),first_check);
+		auto g = second_check;
+		auto ro = (d * g * f) / (4 * dot(l, norm) * dot(v, norm));
+		return ro;
+	}
 	return kd / pif + ks*(n + 8) / (8 * pif) * pow(max(0.0f, dot(norm, h)), n); // placeholder (non-microfacet model)
 }
 
