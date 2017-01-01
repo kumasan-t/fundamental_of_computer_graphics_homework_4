@@ -203,15 +203,27 @@ vec3f pathtrace_ray(Scene* scene, ray3f ray, Rng* rng, int depth) {
 	}
 	// YOUR ENVIRONMENT LIGHT CODE GOES HERE ----------------------
 	// sample the brdf for environment illumination if the environment is there
-	
+	if (scene->background_txt != nullptr) {	
+		auto brdf_pair = sample_brdf(kd, ks, n, v, norm, rng->next_vec2f(), rng->next_float());
 		// pick direction and pdf
+		auto brdf_direction = brdf_pair.first;
+		auto brdf_pdf = brdf_pair.second;
 		// compute the material response (brdf*cos)
+		auto brdfcos = max(dot(norm, brdf_direction), 0.0f) * eval_brdf(kd, ks, n, v, brdf_direction, norm, mf);
 		// accumulate recersively scaled by brdf*cos/pdf
+		auto cl = (brdfcos / brdf_pdf) * eval_env(scene->background,scene->background_txt,brdf_direction);
+		if (scene->path_shadows) {
 			// if shadows are enabled
+			if (!intersect_shadow(scene, ray3f::ray3f(pos,brdf_direction)))
+				c += cl;
 				// perform a shadow check and accumulate
-			// else
-				// else just accumulate
-
+		}
+		// else
+		else {
+			// else just accumulate
+			c += cl;
+		}
+	}
 	// YOUR INDIRECT ILLUMINATION CODE GOES HERE ----------------------
 	// sample the brdf for indirect illumination
 		// pick direction and pdf
