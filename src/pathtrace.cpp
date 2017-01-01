@@ -235,10 +235,16 @@ vec3f pathtrace_ray(Scene* scene, ray3f ray, Rng* rng, int depth) {
 	}
 	// YOUR INDIRECT ILLUMINATION CODE GOES HERE ----------------------
 	// sample the brdf for indirect illumination
+	if (depth < scene->path_max_depth) {
+		auto indirect_pair = sample_brdf(kd, ks, n, v, norm, rng->next_vec2f(), rng->next_float());
 		// pick direction and pdf
+		auto indirect_direction = indirect_pair.first;
+		auto indirect_pdf = indirect_pair.second;
 		// compute the material response (brdf*cos)
+		auto brdfcos = max(dot(norm, indirect_direction), 0.0f) * eval_brdf(kd, ks, n, v, indirect_direction, norm, mf);
 		// accumulate recersively scaled by brdf*cos/pdf
-
+		c += (brdfcos * pathtrace_ray(scene, ray3f(pos, indirect_direction), rng, depth+1)) / indirect_pdf;
+	}
 	// return the accumulated color
 	return c;
 }
