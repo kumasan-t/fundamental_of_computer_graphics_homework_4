@@ -146,7 +146,7 @@ void json_parse_opttexture(jsonvalue json, image3f*& txt, string name) {
     if (json_texture_cache.find(fullname) == json_texture_cache.end()) {
         auto ext = fullname.substr(fullname.size()-3);
         if(ext == "pfm") {
-            auto image = read_pnm("models/pisa_latlong.pfm", true);
+            auto image = read_pnm(fullname, true);
             image = image.gamma(1/2.2);
             json_texture_cache[fullname] = new image3f(image);
         } else if(ext == "png") {
