@@ -33,7 +33,7 @@ vec3f lookup_scaled_texture(vec3f value, image3f* texture, vec2f uv, bool tile =
 		if (j_prime < 0) { j_prime = j_prime + texture->height(); }
 	}
 	//compute bilinear filtering
-	value = texture->at(i, j) * (1 - s) * (1 - t) +
+	value *= texture->at(i, j) * (1 - s) * (1 - t) +
 		texture->at(i, j_prime) * (1 - s) * t +
 		texture->at(i_prime, j) * s * (1 - t) +
 		texture->at(i_prime, j_prime) * s * t;
